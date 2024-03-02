@@ -29,10 +29,9 @@ fn get_users() -> Box<str> {
     str_result
 }
 
-#[post("/user")]
-fn create_user() -> &'static str {
-
-    "Done"
+#[post("/user", data = "<input>")]
+fn create_user(input: String) -> String {
+    input
 }
 
 #[launch]
