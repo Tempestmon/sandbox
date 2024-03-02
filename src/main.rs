@@ -1,13 +1,11 @@
-mod database;
 mod databases;
-mod schema;
 
 #[macro_use] extern crate rocket;
 
 use diesel::{QueryDsl, RunQueryDsl, SelectableHelper};
 use rocket::Request;
 use databases::sqlite::establish_connection;
-use crate::schema::users::dsl::users;
+use crate::databases::schema::users::dsl::users;
 use databases::sqlite::User;
 
 #[catch(404)]
@@ -26,7 +24,6 @@ fn get_users() -> Box<str> {
     let result = users.select(User::as_select()).load(connection).expect("Got an error selecting users");
     let mut str_result: Box<str> = Box::from("no result");
     for kek in result {
-        println!("{}", kek.name);
         str_result = Box::from(kek.name);
     }
     str_result

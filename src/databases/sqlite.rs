@@ -6,7 +6,7 @@ pub fn establish_connection() -> SqliteConnection {
 
 
 #[derive(Queryable, Selectable)]
-#[diesel(table_name = crate::schema::users)]
+#[diesel(table_name = crate::databases::schema::users)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub(crate) struct User {
     id: i32,
