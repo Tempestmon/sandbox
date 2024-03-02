@@ -1,0 +1,5 @@
+/target
+/migrations
+data.db
+.env
+.idea
