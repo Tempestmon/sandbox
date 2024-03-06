@@ -8,6 +8,8 @@ use rocket::Request;
 use databases::sqlite::establish_connection;
 use crate::databases::schema::users::dsl::*;
 use databases::sqlite::User;
+use crate::databases::schema::posts::dsl::posts;
+use crate::databases::schema::posts::{body, title, user_id};
 use crate::databases::schema::users::name;
 
 #[catch(404)]
@@ -39,8 +41,15 @@ fn create_user(user_name: String) -> String {
     result.unwrap().to_string()
 }
 
+#[post("/<u_id>/post", data = "<text>")]
+fn create_post(u_id: i32, text: String) -> String {
+    let connection = &mut establish_connection();
+    let result = insert_into(posts).values((title.eq("Test"), body.eq(text), user_id.eq(u_id))).execute(connection);
+    result.unwrap().to_string()
+}
+
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index, get_users, create_user])
+    rocket::build().mount("/", routes![index, get_users, create_user, create_post])
         .register("/", catchers![not_found])
 }
