@@ -1,4 +1,4 @@
-use std::time::SystemTime;
+use chrono::NaiveDateTime;
 use diesel::{Connection, Queryable, Selectable, SqliteConnection};
 
 pub fn establish_connection() -> SqliteConnection {
@@ -20,7 +20,7 @@ pub(crate) struct User {
 #[diesel(belongs_to(User, foreign_key = user_id))]
 struct Post {
     id: i32,
-    creation_timestamp: SystemTime,
+    creation_timestamp: NaiveDateTime,
     title: String,
     body: String,
     user_id: i32,
