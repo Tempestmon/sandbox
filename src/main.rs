@@ -9,9 +9,9 @@ use rocket::Request;
 use databases::models::establish_connection;
 use crate::databases::schema::users::dsl::*;
 use databases::models::{User, Post};
+use crate::databases::models::{NewPost, NewUser};
 use crate::databases::schema::posts::dsl::posts;
-use crate::databases::schema::posts::{body, title, user_id};
-use crate::databases::schema::users::name;
+use crate::databases::schema::posts::{title, user_id};
 
 #[catch(404)]
 fn not_found(req: &Request) -> String {
@@ -48,23 +48,22 @@ fn get_user(u_id: i32) -> String {
 }
 
 #[post("/users", data = "<user>")]
-fn create_user(user: Json<User>) -> String {
+fn create_user(user: Json<NewUser>) -> String {
     let connection = &mut establish_connection();
     let result = insert_into(users)
-        .values(name.eq(user.name.clone()))
+        .values(user.into_inner())
         .execute(connection);
-    result.unwrap().to_string()
+    result.expect("Could not create user").to_string()
 }
 
-#[post("/users/<u_id>/posts", data = "<text>")]
-fn create_post(u_id: i32, text: String) -> String {
+#[post("/users/<u_id>/posts", data = "<post>")]
+fn create_post(u_id: i32, post: Json<NewPost>) -> String {
+    let new_post = NewPost::new(post.title.clone(), post.body.clone(), u_id);
     let connection = &mut establish_connection();
     let result = insert_into(posts)
-        .values((title.eq("Test"),
-                        body.eq(text),
-                        user_id.eq(u_id)))
+        .values(new_post)
         .execute(connection);
-    result.unwrap().to_string()
+    result.expect("Could not create post").to_string()
 }
 
 #[get("/posts/<p_id>")]
