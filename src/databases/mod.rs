@@ -1,3 +1,4 @@
-pub(crate) mod sqlite;
+pub(crate) mod models;
 mod database;
 pub mod schema;
+mod tests;
