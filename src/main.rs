@@ -4,6 +4,7 @@ mod databases;
 
 use diesel::insert_into;
 use diesel::prelude::*;
+use rocket::http::Status;
 use rocket::serde::{json::Json};
 use rocket::Request;
 use databases::models::establish_connection;
@@ -44,23 +45,30 @@ fn get_user(u_id: i32) -> Json<User> {
 }
 
 #[post("/users", data = "<user>")]
-fn create_user(user: Json<NewUser>) -> String {
+fn create_user(user: Json<NewUser>) -> Status {
     let connection = &mut establish_connection();
     let result = insert_into(users)
         .values(user.into_inner())
         .execute(connection);
-    result.expect("Could not create user").to_string()
+    match result {
+        Ok(_) => {Status::Ok}
+        Err(_) => {Status::NotAcceptable}
+    }
 }
 
 #[post("/users/<u_id>/posts", data = "<post>")]
-fn create_post(u_id: i32, post: Json<NewPost>) -> String {
+fn create_post(u_id: i32, post: Json<NewPost>) -> Status {
     let new_post = NewPost::new(post.title.clone(), post.body.clone(), u_id);
     let connection = &mut establish_connection();
     let result = insert_into(posts)
         .values(new_post)
         .execute(connection);
-    result.expect("Could not create post").to_string()
+    match result {
+        Ok(_) => {Status::Ok}
+        Err(_) => {Status::NotAcceptable}
+    }
 }
+// TODO: Можно создать пост от имени несуществующего пользователя
 
 #[get("/users/<u_id>/posts")]
 fn get_user_posts(u_id: i32) -> Json<Vec<Post>> {
