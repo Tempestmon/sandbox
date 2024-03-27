@@ -11,7 +11,7 @@ use crate::databases::schema::users::dsl::*;
 use databases::models::{User, Post};
 use crate::databases::models::{NewPost, NewUser};
 use crate::databases::schema::posts::dsl::posts;
-use crate::databases::schema::posts::{title, user_id};
+
 
 #[catch(404)]
 fn not_found(req: &Request) -> String {
@@ -24,27 +24,22 @@ fn index() -> &'static str {
 }
 
 #[get("/users")]
-fn get_users() -> String {
+fn get_users() -> Json<Vec<User>> {
     let connection = &mut establish_connection();
     let result = users.select(User::as_select())
         .load(connection)
         .expect("Got an error selecting users");
-    let mut string_result = String::new();
-    for user in result {
-        string_result.push_str(&*user.name);
-        string_result.push_str("\n");
-    }
-    string_result
+    Json(result)
 }
 
 #[get("/users/<u_id>")]
-fn get_user(u_id: i32) -> String {
+fn get_user(u_id: i32) -> Json<User> {
     let connection = &mut establish_connection();
     let result = users.find(u_id)
         .select(User::as_select())
         .first(connection)
         .expect("Got an error selecting user by id");
-    result.name
+    Json(result)
 }
 
 #[post("/users", data = "<user>")]
@@ -67,13 +62,13 @@ fn create_post(u_id: i32, post: Json<NewPost>) -> String {
 }
 
 #[get("/posts/<p_id>")]
-fn get_posts(p_id: i32) -> String {
+fn get_posts(p_id: i32) -> Json<Post> {
     let connection = &mut establish_connection();
     let result = posts.find(p_id)
         .select(Post::as_select())
         .first(connection)
         .expect("Post is not found");
-    result.body
+    Json(result)
 }
 
 #[launch]
