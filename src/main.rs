@@ -11,6 +11,7 @@ use crate::databases::schema::users::dsl::*;
 use databases::models::{User, Post};
 use crate::databases::models::{NewPost, NewUser};
 use crate::databases::schema::posts::dsl::posts;
+use crate::databases::schema::posts::user_id;
 
 
 #[catch(404)]
@@ -61,6 +62,16 @@ fn create_post(u_id: i32, post: Json<NewPost>) -> String {
     result.expect("Could not create post").to_string()
 }
 
+#[get("/users/<u_id>/posts")]
+fn get_user_posts(u_id: i32) -> Json<Vec<Post>> {
+    let connection = &mut establish_connection();
+    let result = posts.filter(user_id.eq(u_id))
+        .select(Post::as_select())
+        .load(connection)
+        .expect("No posts found");
+    Json(result)
+}
+
 #[get("/posts/<p_id>")]
 fn get_posts(p_id: i32) -> Json<Post> {
     let connection = &mut establish_connection();
@@ -78,6 +89,7 @@ fn rocket() -> _ {
                                         create_user,
                                         create_post,
                                         get_user,
-                                        get_posts])
+                                        get_posts,
+                                        get_user_posts])
         .register("/", catchers![not_found])
 }
